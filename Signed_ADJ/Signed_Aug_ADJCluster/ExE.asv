@@ -1,0 +1,12 @@
+function [Jf,v] = ExE( X,K,c,I )
+%UNTITLED4 Summary of this function goes here
+%   Detailed explanation goes here
+view(biograph(X));
+
+[Jf,~, ~, ~,~, ~,~,v] = Augmented_ADJCluster(X,K,2,c);
+
+plotClusters(Jf,v,I);
+
+
+end
+

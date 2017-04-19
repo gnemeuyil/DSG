@@ -1,0 +1,216 @@
+function [Jf1, kf1, db1, Q1, ang1, acc1,Cf,v1,d1,v2,d2,I] = AdjFitting(A,K,L,c,C)
+%ADJFITTING Summary of this function goes here
+%   Detailed explanation goes here
+
+
+m = size(A,1);
+if ~exist('K','var') && ~exist('L','var')&& ~exist('c','var')
+    K = min(100, ceil(m/10));
+    L = 2;
+    c = 0;
+end;
+    p = 'on';
+   % p='off';
+   
+   
+   tic;
+   d=K;
+db = zeros(min(d,K)-1,3);
+kf = zeros(3,1);
+Q = zeros(min(d,K)-1,1);
+ang = zeros(min(d,K)-1,3);
+acc = zeros(min(d,K)-1,1);
+temp = [10 0];
+
+
+
+% calculate the K largest positive real eigenvalues with corresponding
+% eigenvectors which are all positive
+%[ax d1]=FindEigpairs(A,K);
+tic
+[V, D1,V2,D2,In ]=ScreenEigpairs(A,K);
+toc
+warning('Screening Eigen pairs done!)');
+
+
+
+
+
+% clustering using K-means
+%[Jt, dbt, ang3, Ct] = ADJ(ax,c);
+%%
+
+% In contains all the location of no-positive/non-negative vectors. Those 
+% are part of the vectors we are looking for, Find the candidate vectors 
+% by removing all the sets that do not include In.
+combos=combntns(1:K,C);
+Lia=ismember(combos,In);
+Insize=size(In,2);
+Loc=sum(Lia,2)==Insize;
+
+candidates=combos(Loc,:);
+
+% combinatorial fitting based on modularity measures
+for i = 2:min(size(V,2),K)
+    tic
+    i
+    [Jt, dbt, ang3, Ct] = ADJ(V(:,1:i),c);
+    
+    db(i-1,:) = dbt;
+    ang(i-1,:) = ang3;
+    if db(i-1,1)<=temp(1)
+        temp(1) = db(i-1,1);
+        Jf{1} = Jt;
+        kf(1) = i;
+        Cf{1} = Ct;
+    elseif temp(1) == db(i-1,1)
+        warning('Multiple Solution!)');
+    end;
+    
+    
+    
+    P = idx2lgc(Jt);
+    Q(i-1) = SignQfunction(A,P);
+
+    if Q(i-1)>=temp(2)
+        temp(2) = Q(i-1);
+        Jf{2} = Jt;
+        kf(2) = i;
+        Cf{2} = Ct;
+    elseif temp(2) == Q(i-1)
+        warning('Multiple Solution!)');
+    end;
+    
+    if exist('Partition','var') && sum((size(P)-size(Partition)).^2)==0;
+        acc(i-1) = PartitionAccuracy(P, Partition);
+    end
+    
+     warning('one Loop done!)');
+   toc
+end;
+toc;
+t=toc;
+
+
+    if strcmp(p,'on')
+    figure;plot(2:min(d,K),db(:,1)','-o','MarkerSize',6,'MarkerFaceColor','b');
+    xlabel('k','FontSize',14);
+    ylabel('Davies-Buldin Index','FontSize',14);
+ 
+    box on;
+    axis square;
+
+    
+    
+    
+    figure;plot(2:K,abs(Q),'-o','MarkerSize',6,'MarkerFaceColor','b');
+    xlabel('k','FontSize',14);
+    ylabel('Modularity','FontSize',14);
+
+    box on;
+    axis square;
+
+
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%
+
+
+
+% calculate DBI and mudularity
+for i = 2:min(size(V,2),K)
+    tic
+    i
+    [Jt, dbt, ang3, Ct] = ADJ(V(:,1:i),c);
+    
+    db(i-1,:) = dbt;
+    ang(i-1,:) = ang3;
+    if db(i-1,1)<=temp(1)
+        temp(1) = db(i-1,1);
+        Jf{1} = Jt;
+        kf(1) = i;
+        Cf{1} = Ct;
+    elseif temp(1) == db(i-1,1)
+        warning('Multiple Solution!)');
+    end;
+    
+    
+    
+    P = idx2lgc(Jt);
+    Q(i-1) = SignQfunction(A,P);
+
+    if Q(i-1)>=temp(2)
+        temp(2) = Q(i-1);
+        Jf{2} = Jt;
+        kf(2) = i;
+        Cf{2} = Ct;
+    elseif temp(2) == Q(i-1)
+        warning('Multiple Solution!)');
+    end;
+    
+    if exist('Partition','var') && sum((size(P)-size(Partition)).^2)==0;
+        acc(i-1) = PartitionAccuracy(P, Partition);
+    end
+    
+     warning('one Loop done!)');
+   toc
+end;
+toc;
+t=toc;
+
+
+    if strcmp(p,'on')
+    figure;plot(2:min(d,K),db(:,1)','-o','MarkerSize',6,'MarkerFaceColor','b');
+    xlabel('k','FontSize',14);
+    ylabel('Davies-Buldin Index','FontSize',14);
+ 
+    box on;
+    axis square;
+
+    
+    
+    
+    figure;plot(2:K,abs(Q),'-o','MarkerSize',6,'MarkerFaceColor','b');
+    xlabel('k','FontSize',14);
+    ylabel('Modularity','FontSize',14);
+
+    box on;
+    axis square;
+
+
+end;
+
+
+v1=V(:,1:kf(2));
+d1=D1;
+v2=V2;
+d2=D2;
+Jf1 = Jf;
+kf1 = kf;
+db1 = db;
+Q1 = Q;
+ang1 = ang;
+acc1 = acc;
+I=In;    
+    
+    
+    
+    
+    
+end
+
+

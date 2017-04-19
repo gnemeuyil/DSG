@@ -1,0 +1,11 @@
+Var1,Node_Label,Vis,Label_Vis,ColorNodes
+1,' 1',true,true,'0,255,0'
+2,' 2',true,true,'0,255,0'
+3,' 3',true,true,'0,255,0'
+4,' 4',true,true,'0,255,0'
+5,' 5',true,true,'0,255,0'
+6,' 6',true,true,'0,255,0'
+7,' 7',true,true,'0,255,0'
+8,' 8',true,true,'0,255,0'
+9,' 9',true,true,'0,255,0'
+10,'10',true,true,'0,255,0'
